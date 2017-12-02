@@ -15,12 +15,9 @@ class wave_spec(Dataset):
 	def __init__(self,root_dir,shuffle=False,trans = None):
 		self.root_dir = root_dir
 		self.trans = trans
-		class1 = [(root_dir + 'yes/' + fn,1) for fn in os.listdir(root_dir + 'yes/') if fn.endswith('.wav') ]
-		class2 = [(root_dir + 'no/' + fn,0) for fn in os.listdir(root_dir + 'no/') if fn.endswith('.wav') ]
+		class1 = [(root_dir + '/yes/' + fn,1) for fn in os.listdir(root_dir + '/yes/') if fn.endswith('.wav') ]
+		class2 = [(root_dir + '/no/' + fn,0) for fn in os.listdir(root_dir + '/no/') if fn.endswith('.wav') ]
 		self.sounds = class1 + class2
-
-		if shuffle:
-			random.shuffle(self.sounds)
 
 	def __getitem__(self,idx):
 
@@ -28,8 +25,8 @@ class wave_spec(Dataset):
 		fs = wave_file.getframerate()
 		N = wave_file.getnframes()
 		stft_img = self.stft_img(wave_file,fs,N)
-		img = Image.fromarray(stft_img)
-
+		img = Image.fromarray(stft_img.astype('uint8'),'L')
+		
 		if self.trans:
 			img = self.trans(img)
 
@@ -45,14 +42,7 @@ class wave_spec(Dataset):
 		wf = wave_file.readframes(N)
 		wf = np.array(struct.unpack('h'*N, wf))
 		_, _, Sxx = signal.spectrogram(wf, fs,return_onesided=True)
+		# print(Sxx.shape)
+
 		return Sxx
-
-
-
-
-
-
-
-
-
 
