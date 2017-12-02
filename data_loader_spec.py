@@ -12,7 +12,7 @@ import random
 
 class wave_spec(Dataset):
 
-	def __init__(self,root_dir,shuffle=False,trans = None):
+	def __init__(self,root_dir,trans = None):
 		self.root_dir = root_dir
 		self.trans = trans
 		class1 = [(root_dir + '/yes/' + fn,1) for fn in os.listdir(root_dir + '/yes/') if fn.endswith('.wav') ]

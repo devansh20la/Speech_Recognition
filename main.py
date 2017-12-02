@@ -1,3 +1,5 @@
+import shutil
+import pickle
 import torch
 from model import network
 from data_loader_spec import wave_spec
@@ -28,7 +30,7 @@ def save_checkpoint(state, is_best, filename,savetrainloss,savetraincorrects,sav
 def model_run(phase,model,inputs,labels,criterion,optimizer):
         
     if phase == 'train':
-        model.train()
+        model.train(True)
     else:
         model.eval()
 
@@ -38,8 +40,8 @@ def model_run(phase,model,inputs,labels,criterion,optimizer):
     		inputs, labels = Variable(inputs.cuda(), requires_grad = False), Variable(labels.cuda(), requires_grad = False)
     	else:
         	inputs, labels = Variable(inputs, requires_grad = False), Variable(labels, requires_grad = False)
-
     else:
+
     	if torch.cuda.is_available():
     		inputs, labels = Variable(inputs.cuda(), volatile = True), Variable(labels.cuda(), volatile= True)
     	else:
@@ -48,7 +50,10 @@ def model_run(phase,model,inputs,labels,criterion,optimizer):
 
     optimizer.zero_grad()
     outputs = model(inputs)
-    labels = labels.type(torch.FloatTensor)
+    if phase == 'val':
+        import pdb
+        pdb.set_trace()
+    labels = labels.type(torch.cuda.FloatTensor)
     outputs = torch.squeeze(outputs)
 
     loss = criterion(outputs, labels)
@@ -62,8 +67,7 @@ def model_run(phase,model,inputs,labels,criterion,optimizer):
         optimizer.step()
 
     corrects = torch.sum(pred==labels.data)
-    
-    return loss.data[0],corrects,outputs
+    return loss.cpu().data[0],corrects,outputs
 
 
 parser = argparse.ArgumentParser(description='PyTorch Speech Recognition')
@@ -83,6 +87,7 @@ data_transforms = {
         transforms.Normalize([0.5],[0.5])
     ]),
     'val': transforms.Compose([
+    	transforms.Scale((129,71)),
         transforms.ToTensor(),
         transforms.Normalize([0.5],[0.5])
     ])
@@ -90,12 +95,14 @@ data_transforms = {
 
 print ("....Initializing data sampler.....")
 data_dir = os.path.expanduser('data')
-dsets = {x: wave_spec(os.path.join(data_dir, x), shuffle = True, trans=data_transforms[x])
+dsets = {x: wave_spec(os.path.join(data_dir, x), trans=data_transforms[x])
          for x in ['train', 'val']}
 
-dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=25, num_workers=0,shuffle=True) 
+dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=25, num_workers=10,shuffle=True) 
                 for x in ['train', 'val']}
 
+import pdb
+pdb.set_trace()
 print ("....Loading Model.....")
 model_ft = network()
 
@@ -160,10 +167,12 @@ for epoch in range(start_epoch,500):
     valcorrects = 0.0
 
     for i,valdata in enumerate(dset_loaders['val'],1):
-        input_speech,label = data['image'],data['label']
+        input_speech,label = data['image'],data['label'] 
+        import pdb
+        pdb.set_trace()
         loss,correct,_ = model_run('val',model_ft, input_speech, label, criterion, optimizer)
-        trainloss += loss
-        traincorrects += correct
+        valloss += loss
+        valcorrects += correct
 
     valloss = valloss/i
     valcorrects = valcorrects/i
@@ -182,4 +191,4 @@ for epoch in range(start_epoch,500):
     'optimizer': optimizer.state_dict(),
     'best_loss': best_loss},is_best,'checkpoint_ep%d.pth.tar'%(epoch),savetrainloss,savetraincorrects,savevalloss,savevalcorrects)
     
-    print ('Epoch = {0}, TrainingLoss = {1}, Train_corrects = {3},val Loss = {2}, val_corrects{4}'.format(epoch,trainloss,valloss,traincorrects,valcorrects))
+    print ('Epoch = {0}, TrainingLoss = {1}, Train_corrects = {2},val Loss = {3}, val_corrects{4}'.format(epoch,trainloss,traincorrects,valloss,valcorrects))

@@ -29,6 +29,5 @@ class network(nn.Module):
 		x = self.rel(self.lin1(x))
 		x = x.view(x.size(0),-1)
 		x = self.dnn(x)
-
 		return x
 
