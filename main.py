@@ -50,16 +50,9 @@ def model_run(phase,model,inputs,labels,criterion,optimizer):
 
     optimizer.zero_grad()
     outputs = model(inputs)
-    if torch.cuda.is_available():
-        labels = labels.type(torch.cuda.FloatTensor)
-    else:
-        labels = labels.type(torch.FloatTensor)
-    outputs = torch.squeeze(outputs)
+
     loss = criterion(outputs, labels)
-    
-    pred = outputs.data.clone()
-    pred[pred>0.5] = 1
-    pred[pred<=0.5] = 0
+    _,pred = torch.max(outputs.data,1)
 
     if phase=='train':
         loss.backward()
@@ -117,7 +110,8 @@ if torch.cuda.is_available():
 
 print ("....Model loaded....")
 
-criterion = nn.BCEWithLogitsLoss()
+# criterion = nn.BCEWithLogitsLoss()
+criterion = nn.CrossEntropyLoss()
 
 optimizer = optim.SGD(model_ft.parameters(), lr=args.lr, momentum=0.9, weight_decay=args.wd)
 
