@@ -101,8 +101,6 @@ dsets = {x: wave_spec(os.path.join(data_dir, x), trans=data_transforms[x])
 dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=25, num_workers=10,shuffle=True) 
                 for x in ['train', 'val']}
 
-import pdb
-pdb.set_trace()
 print ("....Loading Model.....")
 model_ft = network()
 
@@ -166,10 +164,8 @@ for epoch in range(start_epoch,500):
     valloss = 0.0
     valcorrects = 0.0
 
-    for i,valdata in enumerate(dset_loaders['val'],1):
+    for i,data in enumerate(dset_loaders['val'],1):
         input_speech,label = data['image'],data['label'] 
-        import pdb
-        pdb.set_trace()
         loss,correct,_ = model_run('val',model_ft, input_speech, label, criterion, optimizer)
         valloss += loss
         valcorrects += correct
