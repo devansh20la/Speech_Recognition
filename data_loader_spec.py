@@ -42,7 +42,5 @@ class wave_spec(Dataset):
 		wf = wave_file.readframes(N)
 		wf = np.array(struct.unpack('h'*N, wf))
 		_, _, Sxx = signal.spectrogram(wf, fs,return_onesided=True)
-		# print(Sxx.shape)
-
 		return Sxx
 

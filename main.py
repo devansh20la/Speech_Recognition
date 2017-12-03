@@ -47,15 +47,13 @@ def model_run(phase,model,inputs,labels,criterion,optimizer):
     	else:
         	inputs, labels = Variable(inputs, volatile = True), Variable(labels, volatile= True)
 
-
     optimizer.zero_grad()
     outputs = model(inputs)
-    if phase == 'val':
-        import pdb
-        pdb.set_trace()
-    labels = labels.type(torch.cuda.FloatTensor)
+    if torch.cuda.is_available():
+        labels = labels.type(torch.cuda.FloatTensor)
+    else:
+        labels = labels.type(torch.FloatTensor)
     outputs = torch.squeeze(outputs)
-
     loss = criterion(outputs, labels)
     
     pred = outputs.data.clone()
