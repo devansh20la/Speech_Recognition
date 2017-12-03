@@ -15,7 +15,7 @@ class network(nn.Module):
 		self.lin1 = nn.Linear(64,32)
 		self.rel = nn.ReLU()
 		self.dnn = nn.Sequential(nn.Linear(10656, 10656), nn.ReLU(inplace=True), nn.Linear(10656, 5328), nn.ReLU(inplace=True), 
-			nn.Linear(5328, 2664), nn.ReLU(inplace=True), nn.Linear(2664, 1))
+			nn.Linear(5328, 2664), nn.ReLU(inplace=True), nn.Linear(2664, 6))
 
 		for m in self.modules():
 			if isinstance(m, nn.Conv2d):
@@ -23,8 +23,6 @@ class network(nn.Module):
 				m.weight.data.normal_(0, math.sqrt(2. / n))
 
 	def forward(self,x):
-		import pdb
-		pdb.set_trace()
 		x = self.pool(self.conv1(x))
 		x = self.conv2(x)
 		x = x.permute(0,2,3,1)

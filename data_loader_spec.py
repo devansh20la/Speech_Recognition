@@ -15,9 +15,15 @@ class wave_spec(Dataset):
 	def __init__(self,root_dir,trans = None):
 		self.root_dir = root_dir
 		self.trans = trans
-		class1 = [(root_dir + '/yes/' + fn,1) for fn in os.listdir(root_dir + '/yes/') if fn.endswith('.wav') ]
-		class2 = [(root_dir + '/no/' + fn,0) for fn in os.listdir(root_dir + '/no/') if fn.endswith('.wav') ]
-		self.sounds = class1 + class2
+		classes = [fn for fn in os.listdir(self.root_dir) if os.path.isdir(self.root_dir + '/' + fn) ]
+		class_index = {}
+		j = 0
+		for i in classes:
+			class_index[i] = j
+			j+=1
+		self.sounds = []
+		for i in classes:
+			self.sounds = self.sounds + [(root_dir + '/' + i + '/' + fn,class_index[i]) for fn in os.listdir(root_dir + '/' + i + '/') if fn.endswith('.wav') ]
 
 	def __getitem__(self,idx):
 
@@ -43,4 +49,3 @@ class wave_spec(Dataset):
 		wf = np.array(struct.unpack('h'*N, wf))
 		_, _, Sxx = signal.spectrogram(wf, fs,return_onesided=True)
 		return Sxx
-
