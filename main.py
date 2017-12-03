@@ -1,3 +1,5 @@
+import numpy as np
+import random
 import shutil
 import pickle
 import torch
@@ -28,7 +30,6 @@ def save_checkpoint(state, is_best, filename,savetrainloss,savetraincorrects,sav
         print("New Best Model Found")
 
 def model_run(phase,model,inputs,labels,criterion,optimizer):
-        
     if phase == 'train':
         model.train(True)
     else:
@@ -75,6 +76,15 @@ parser.add_argument('--lr_de','--lr_decay',type=int,default=30,help='learning ra
 parser.add_argument('--checkpoint',type=str,default='')
 parser.add_argument('--wd','--weightdecay',type=float,default=0)
 args = parser.parse_args()
+
+manualseed = 200
+random.seed(manualseed)
+torch.manual_seed(manualseed)
+np.random.seed(manualseed)
+
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(manualseed)
+
 
 print("learning_rate: {0}, decay:{1}, checkpoint:{2}".format(args.lr,args.lr_de,args.checkpoint))
 

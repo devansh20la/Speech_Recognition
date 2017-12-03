@@ -7,6 +7,12 @@ __pycache__/
 
 **/*.wav
 
+#Torch files
+**/*.tar
+
+#Pkl files
+**/*.pkl 
+
 # C extensions
 *.so
 
